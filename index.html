@@ -331,10 +331,17 @@
     max-height:80vh;
     display:flex;
     flex-direction:column;
+    overflow:hidden;
     transform:translateY(100%);
     transition:transform .25s ease;
   }
   .sheet.open{transform:translateY(0);}
+  #paneWarehouse{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    flex:1;
+  }
   .sheet-handle{
     width:38px;height:4px;
     background:var(--line);
@@ -404,7 +411,10 @@
   .search-box:focus{outline:none;border-color:var(--green);background:#fff;}
 
   .wh-list{
+    flex:1;
+    min-height:0;
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
     display:flex;
     flex-direction:column;
     gap:6px;
@@ -871,7 +881,7 @@
   document.getElementById('tabWarehouse').addEventListener('click', function(){
     document.getElementById('tabWarehouse').classList.add('active');
     document.getElementById('tabNew').classList.remove('active');
-    document.getElementById('paneWarehouse').style.display = 'block';
+    document.getElementById('paneWarehouse').style.display = 'flex';
     document.getElementById('paneNew').style.display = 'none';
     renderWarehouse();
   });
