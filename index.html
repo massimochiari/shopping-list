@@ -531,7 +531,7 @@
       <div class="receipt-label">סה"כ עד כה</div>
       <div class="receipt-sub" id="receiptSub">0 מוצרים נקנו</div>
     </div>
-    <div class="receipt-sum" id="receiptSum">₪0.00</div>
+    <div class="receipt-sum" id="receiptSum">€0.00</div>
   </div>
 </div>
 
@@ -606,7 +606,7 @@
   }
 
   function fmt(n){
-    return '₪' + (Math.round(n*100)/100).toFixed(2);
+    return '€' + (Math.round(n*100)/100).toFixed(2);
   }
 
   function setDateLabel(){
@@ -693,9 +693,12 @@
     price.className = 'price-input';
     price.type = 'number';
     price.inputMode = 'decimal';
-    price.placeholder = '₪ מחיר';
+    price.step = '0.01';
+    price.min = '0';
+    price.placeholder = '€ מחיר';
     price.value = item.price === null || item.price === undefined ? '' : item.price;
     price.addEventListener('input', function(){ setPrice(item.id, price.value); });
+    price.addEventListener('blur', function(){ normalizePrice(item.id); });
 
     var del = document.createElement('button');
     del.className = 'del-btn';
@@ -732,9 +735,30 @@
   function setPrice(id, val){
     var item = state.items.find(function(i){ return i.id === id; });
     if(!item) return;
-    item.price = val === '' ? null : parseFloat(val);
+    // Allow intermediate states while typing a decimal, e.g. "1." or "1.5"
+    item.price = val === '' ? null : val;
     save();
-    render();
+    updateTotals();
+  }
+
+  function normalizePrice(id){
+    var item = state.items.find(function(i){ return i.id === id; });
+    if(!item) return;
+    var n = parseFloat(item.price);
+    item.price = isNaN(n) ? null : n;
+    save();
+    updateTotals();
+  }
+
+  function updateTotals(){
+    var bought = state.items.filter(function(i){ return i.checked; });
+    var sum = bought.reduce(function(acc,i){ return acc + (parseFloat(i.price)||0) * (i.qty||1); }, 0);
+    document.getElementById('receiptSum').textContent = fmt(sum);
+    document.getElementById('receiptSub').textContent = bought.length + (bought.length===1?' מוצר נקנה':' מוצרים נקנו');
+
+    var total = state.items.length;
+    document.getElementById('progressText').textContent = bought.length + ' מתוך ' + total + ' נקנו';
+    document.getElementById('progressFill').style.width = (total ? (bought.length/total*100) : 0) + '%';
   }
 
   function deleteItem(id){
